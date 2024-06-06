@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -110,6 +111,22 @@ func main() {
 }
 
 func readCodesignConfig() (*codesignConfig, error) {
+	if os.Getenv("CI") == "true" {
+		fmt.Println("CI=true, loading code signing config from env vars...")
+
+		// running in CI, so require env vars to be set
+		var cfg codesignConfig
+		cfg.Identity = os.Getenv("CODESIGN_IDENTITY")
+		cfg.TeamID = os.Getenv("CODESIGN_TEAM_ID")
+
+		if cfg.Identity == "" {
+			return nil, errors.New("CODESIGN_IDENTITY must be set")
+		}
+		if cfg.TeamID == "" {
+			return nil, errors.New("CODESIGN_TEAM_ID must be set")
+		}
+	}
+
 	if _, err := os.Stat("codesign.json"); os.IsNotExist(err) {
 		// prompt the user for a signing identity
 		fmt.Println("'codesign.json' is used to configure code signing for local testing, but this file not found. We'll set this file up now.")
