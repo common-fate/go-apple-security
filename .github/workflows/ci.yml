@@ -52,3 +52,4 @@ jobs:
         env:
           CODESIGN_IDENTITY: ${{ secrets.CODESIGN_IDENTITY }}
           CODESIGN_TEAM_ID: ${{ secrets.CODESIGN_TEAM_ID }}
+          DEBUG: "true"
