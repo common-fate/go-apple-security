@@ -9,9 +9,11 @@ package enclavekey
 import "C"
 
 import (
+	"errors"
 	"fmt"
 	"unsafe"
 
+	applesecurity "github.com/common-fate/go-apple-security"
 	"github.com/common-fate/go-apple-security/corefoundation"
 )
 
@@ -22,7 +24,7 @@ type ListInput struct {
 
 // List keys matching the criteria specified in ListInput.
 //
-// Returns applesecurity.ErrNotFound if no keys are found.
+// Returns nil if no keys are found.
 func List(input ListInput) ([]Key, error) {
 	cfTag, err := corefoundation.NewCFData([]byte(input.Tag))
 	if err != nil {
@@ -58,7 +60,13 @@ func List(input ListInput) ([]Key, error) {
 
 	var resultsRef C.CFTypeRef
 	status := C.SecItemCopyMatching(C.CFDictionaryRef(query), &resultsRef)
-	if err := goError(status); err != nil {
+	err = goError(status)
+	if errors.Is(err, applesecurity.ErrNotFound) {
+		// no items found, return nil.
+		return nil, nil
+	}
+
+	if err != nil {
 		return nil, err
 	}
 
