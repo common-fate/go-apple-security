@@ -12,7 +12,6 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"io"
 )
 
 const (
@@ -46,9 +45,4 @@ func rawToEcdsa(raw []byte) *ecdsa.PublicKey {
 // Public returns the public key of this key
 func (k *Key) Public() crypto.PublicKey {
 	return k.PublicKey
-}
-
-func (k *Key) Sign(_ io.Reader, digest []byte, _ crypto.SignerOpts) ([]byte, error) {
-	// return signWithKey(k.label, k.tag, k.Hash(), digest)
-	return nil, nil
 }
