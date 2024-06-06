@@ -55,7 +55,7 @@ func main() {
 	}
 
 	fmt.Println("packaging test binaries...")
-	cmd = exec.Command("pkgbuild", "--identifier", "goapplesecurity.test", "--install-location", "/usr/local/bin/goapplesecurity", "--root", "./bin")
+	cmd = exec.Command("pkgbuild", "--identifier", "goapplesecurity.test", "--install-location", "/usr/local/bin/goapplesecurity", "--root", "./bin", "tests.pkg")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {

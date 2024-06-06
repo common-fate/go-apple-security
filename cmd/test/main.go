@@ -121,6 +121,14 @@ func main() {
 			continue
 		}
 
+		fmt.Printf("unquarantining %q...\n", binaryPath)
+		cmd = exec.Command("sudo", "xattr", "-dr", "com.apple.quarantine", binaryPath)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			log.Fatalf("failed to run %q: %v", binaryPath, err)
+		}
+
 		fmt.Printf("running %q...\n", binaryPath)
 		cmd = exec.Command(binaryPath, "-test.v")
 		cmd.Stdout = os.Stdout
