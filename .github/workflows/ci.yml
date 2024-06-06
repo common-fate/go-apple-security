@@ -48,7 +48,7 @@ jobs:
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
 
       - name: Test
-        run: make test
+        run: go run cmd/ci/main.go
         env:
           CODESIGN_IDENTITY: ${{ secrets.CODESIGN_IDENTITY }}
           CODESIGN_TEAM_ID: ${{ secrets.CODESIGN_TEAM_ID }}
