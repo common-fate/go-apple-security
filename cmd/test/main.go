@@ -106,6 +106,14 @@ func main() {
 			if err := cmd.Run(); err != nil {
 				log.Fatalf("failed to check code signature for '%s': %v", binaryPath, err)
 			}
+
+			fmt.Printf("checking SecAssessment system policy security on %q...\n", binaryPath)
+			cmd = exec.Command("spctl", "--assess", "--verbose", binaryPath)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				log.Fatalf("failed to check SecAssessment for '%s': %v", binaryPath, err)
+			}
 		}
 
 		if os.Getenv("CI") == "true" && file.Name() == "enclavekey.test" {
