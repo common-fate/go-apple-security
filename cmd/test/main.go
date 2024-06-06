@@ -108,6 +108,11 @@ func main() {
 			}
 		}
 
+		if os.Getenv("CI") == "true" && binaryPath == "enclavekey.test" {
+			fmt.Printf("skipping running %q as it is not supported on GitHub Actions...\n", binaryPath)
+			continue
+		}
+
 		fmt.Printf("running %q...\n", binaryPath)
 		cmd = exec.Command(binaryPath, "-test.v")
 		cmd.Stdout = os.Stdout
