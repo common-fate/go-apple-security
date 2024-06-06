@@ -98,6 +98,14 @@ func main() {
 			if err := cmd.Run(); err != nil {
 				log.Fatalf("failed to check entitlements for '%s': %v", binaryPath, err)
 			}
+
+			fmt.Printf("checking code signature on %q...\n", binaryPath)
+			cmd = exec.Command("codesign", "-vvv", binaryPath)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				log.Fatalf("failed to check code signature for '%s': %v", binaryPath, err)
+			}
 		}
 
 		fmt.Printf("running %q...\n", binaryPath)
