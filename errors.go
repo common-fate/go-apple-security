@@ -65,9 +65,9 @@ var (
 	ErrNotFound = Error(-25300)
 )
 
-type ErrorCode = C.OSStatus
-
-func ErrorFromCode(errCode ErrorCode) error {
+// ErrorFromCode turns an error code into a Go error.
+// A zero error code indicates success, in which case nil will be returned.
+func ErrorFromCode(errCode int) error {
 	if errCode == C.errSecSuccess {
 		return nil
 	}

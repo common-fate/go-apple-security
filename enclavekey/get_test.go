@@ -1,8 +1,11 @@
 package enclavekey
 
 import (
+	"bytes"
 	"errors"
 	"testing"
+
+	applesecurity "github.com/common-fate/go-apple-security"
 )
 
 func TestGet(t *testing.T) {
@@ -40,12 +43,12 @@ func TestGet(t *testing.T) {
 				Tag:   tt.args.input.Tag,
 				Label: tt.args.input.Label,
 			})
-			if err != nil && !errors.Is(err, ErrNotFound) {
+			if err != nil && !errors.Is(err, applesecurity.ErrNotFound) {
 				t.Fatalf("error deleting existing keys: %v", err)
 			}
 
 			// create a new key based on the provided input
-			key, err := New(NewInput{
+			key, err := Create(CreateInput{
 				Tag:   tt.args.input.Tag,
 				Label: tt.args.input.Label,
 			})
@@ -59,8 +62,16 @@ func TestGet(t *testing.T) {
 				return
 			}
 
-			if !got.Public.Equal(key.Public) {
-				t.Errorf("retrieved public key was not equal to public key from New(), got = %+v, want = %+v", got.Public, key.Public)
+			if !got.PublicKey.Equal(key.PublicKey) {
+				t.Errorf("retrieved public key was not equal to public key from New(), got = %+v, want = %+v", got.PublicKey, key.PublicKey)
+			}
+
+			if got.ApplicationLabel == nil {
+				t.Errorf("got nil ApplicationLabel")
+			}
+
+			if !bytes.Equal(got.ApplicationLabel, key.ApplicationLabel) {
+				t.Errorf("got ApplicationLabel = %x, want = %x", got.ApplicationLabel, key.ApplicationLabel)
 			}
 		})
 	}

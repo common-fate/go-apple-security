@@ -14,7 +14,7 @@ import (
 	"github.com/common-fate/go-apple-security/corefoundation"
 )
 
-type NewInput struct {
+type CreateInput struct {
 	// UserPresence constrains access to the key with
 	// either biometry or passcode.
 	//
@@ -31,8 +31,8 @@ type NewInput struct {
 	Label string
 }
 
-// New creates a new ECDSA P-256 key backed by the Secure Enclave.
-func New(input NewInput) (*Key, error) {
+// Create creates a new ECDSA P-256 key backed by the Secure Enclave.
+func Create(input CreateInput) (*Key, error) {
 	protection := C.kSecAttrAccessibleWhenUnlockedThisDeviceOnly
 	flags := C.kSecAccessControlPrivateKeyUsage
 
@@ -124,7 +124,10 @@ func New(input NewInput) (*Key, error) {
 	)
 
 	key := Key{
-		Public: rawToEcdsa(keyBytes),
+		PublicKey:        rawToEcdsa(keyBytes),
+		ApplicationLabel: corefoundation.GetDictionaryDataValue(corefoundation.DictionaryRef(keyAttrs), corefoundation.DataRef(C.kSecAttrApplicationLabel)),
+		Tag:              input.Tag,
+		Label:            input.Label,
 	}
 
 	return &key, nil

@@ -8,7 +8,10 @@ package keychain
 */
 import "C"
 
-import "github.com/common-fate/go-apple-security/corefoundation"
+import (
+	applesecurity "github.com/common-fate/go-apple-security"
+	"github.com/common-fate/go-apple-security/corefoundation"
+)
 
 // GenericPassword is a generic password item.
 //
@@ -56,7 +59,7 @@ func (p *GenericPassword) Add() error {
 
 	errCode := C.SecItemAdd(C.CFDictionaryRef(attrs), nil)
 
-	return checkError(errCode)
+	return applesecurity.ErrorFromCode(int(errCode))
 }
 
 // Remove the item from the keychain.
@@ -88,5 +91,5 @@ func (p *GenericPassword) Remove() error {
 
 	errCode := C.SecItemDelete(C.CFDictionaryRef(attrs))
 
-	return checkError(errCode)
+	return applesecurity.ErrorFromCode(int(errCode))
 }

@@ -9,8 +9,10 @@ package enclavekey
 import "C"
 
 import (
+	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
+	"io"
 )
 
 const (
@@ -24,7 +26,12 @@ const (
 // Key is a NIST P-256 elliptic curve key
 // backed by the secure enclave.
 type Key struct {
-	Public *ecdsa.PublicKey
+	// ApplicationLabel is used to look up a key programmatically
+	// and is the hash of a key
+	ApplicationLabel []byte
+	PublicKey        *ecdsa.PublicKey
+	Tag              string
+	Label            string
 }
 
 // rawToEcdsa turns an ASN.1 encoded byte stream to an ecdsa public key
@@ -34,4 +41,14 @@ func rawToEcdsa(raw []byte) *ecdsa.PublicKey {
 	ecKey.Curve = elliptic.P256()
 	ecKey.X, ecKey.Y = elliptic.Unmarshal(ecKey.Curve, raw)
 	return ecKey
+}
+
+// Public returns the public key of this key
+func (k *Key) Public() crypto.PublicKey {
+	return k.PublicKey
+}
+
+func (k *Key) Sign(_ io.Reader, digest []byte, _ crypto.SignerOpts) ([]byte, error) {
+	// return signWithKey(k.label, k.tag, k.Hash(), digest)
+	return nil, nil
 }

@@ -64,13 +64,21 @@ func Get(input GetInput) (*Key, error) {
 	}
 
 	result := Key{
-		Public: rawToEcdsa(pubkey),
+		PublicKey:        rawToEcdsa(pubkey.Key),
+		ApplicationLabel: pubkey.ApplicationLabel,
+		Tag:              input.Tag,
+		Label:            input.Label,
 	}
 
 	return &result, nil
 }
 
-func extractPubKey(key C.SecKeyRef) ([]byte, error) {
+type pubKey struct {
+	Key              []byte
+	ApplicationLabel []byte
+}
+
+func extractPubKey(key C.SecKeyRef) (*pubKey, error) {
 	publicKey := C.SecKeyCopyPublicKey(key)
 	defer C.CFRelease(C.CFTypeRef(publicKey))
 
@@ -82,8 +90,13 @@ func extractPubKey(key C.SecKeyRef) ([]byte, error) {
 		return nil, fmt.Errorf("cannot extract public key")
 	}
 
-	return C.GoBytes(
-		unsafe.Pointer(C.CFDataGetBytePtr(val)),
-		C.int(C.CFDataGetLength(val)),
-	), nil
+	result := pubKey{
+		Key: C.GoBytes(
+			unsafe.Pointer(C.CFDataGetBytePtr(val)),
+			C.int(C.CFDataGetLength(val)),
+		),
+		ApplicationLabel: corefoundation.GetDictionaryDataValue(corefoundation.DictionaryRef(keyAttrs), corefoundation.DataRef(C.kSecAttrApplicationLabel)),
+	}
+
+	return &result, nil
 }

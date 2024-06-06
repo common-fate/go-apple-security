@@ -4,9 +4,9 @@ import (
 	"testing"
 )
 
-func TestNewKey(t *testing.T) {
+func TestCreateKey(t *testing.T) {
 	type args struct {
-		opts NewInput
+		opts CreateInput
 	}
 	tests := []struct {
 		name    string
@@ -16,7 +16,7 @@ func TestNewKey(t *testing.T) {
 		{
 			name: "ok",
 			args: args{
-				opts: NewInput{
+				opts: CreateInput{
 					Tag: "com.example.goapplesecurity.test.key",
 				},
 			},
@@ -24,12 +24,12 @@ func TestNewKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := New(tt.args.opts)
+			got, err := Create(tt.args.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewKey() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got.Public == nil {
+			if got.PublicKey == nil {
 				t.Fatal("returned key had no public key")
 			}
 		})

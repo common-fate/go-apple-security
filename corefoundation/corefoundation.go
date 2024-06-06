@@ -18,6 +18,10 @@ const (
 )
 
 type TypeRef = C.CFTypeRef
+type ArrayRef = C.CFArrayRef
+type StringRef = C.CFStringRef
+type DataRef = C.CFDataRef
+type DictionaryRef = C.CFDictionaryRef
 
 type Dictionary = map[TypeRef]TypeRef
 
@@ -59,4 +63,73 @@ func NewCFString(s string) (C.CFStringRef, error) {
 		return ref, fmt.Errorf("error creating CFString")
 	}
 	return ref, nil
+}
+
+// CFArrayToArray converts a CFArrayRef to an array of CFTypes.
+func CFArrayToArray(cfArray ArrayRef) (a []TypeRef) {
+	count := C.CFArrayGetCount(cfArray)
+	if count > 0 {
+		a = make([]C.CFTypeRef, count)
+		C.CFArrayGetValues(cfArray, C.CFRange{0, count}, (*unsafe.Pointer)(unsafe.Pointer(&a[0])))
+	}
+	return
+}
+
+// CFDictionaryToMap converts CFDictionaryRef to a map.
+func CFDictionaryToMap(cfDict C.CFDictionaryRef) Dictionary {
+	count := C.CFDictionaryGetCount(cfDict)
+	if count > 0 {
+		keys := make([]C.CFTypeRef, count)
+		values := make([]C.CFTypeRef, count)
+		C.CFDictionaryGetKeysAndValues(cfDict, (*unsafe.Pointer)(unsafe.Pointer(&keys[0])), (*unsafe.Pointer)(unsafe.Pointer(&values[0])))
+		m := make(Dictionary, count)
+		for i := C.CFIndex(0); i < count; i++ {
+			m[keys[i]] = values[i]
+		}
+		return m
+	}
+	return nil
+}
+
+func GetDictionaryDataValue(d DictionaryRef, ref DataRef) []byte {
+	value := C.CFDataRef(C.CFDictionaryGetValue(d, unsafe.Pointer(ref)))
+	if value == nilCFData {
+		return nil
+	}
+
+	return CFDataToBytes(value)
+}
+
+func GetDictionaryStringValue(d DictionaryRef, ref StringRef) string {
+	value := C.CFStringRef(C.CFDictionaryGetValue(d, unsafe.Pointer(ref)))
+	if value == nilCFString {
+		return ""
+	}
+
+	return CFStringToString(value)
+}
+
+// CFStringToString converts a CFStringRef to a string.
+func CFStringToString(s StringRef) string {
+	p := C.CFStringGetCStringPtr(s, C.kCFStringEncodingUTF8)
+	if p != nil {
+		return C.GoString(p)
+	}
+	length := C.CFStringGetLength(s)
+	if length == 0 {
+		return ""
+	}
+	maxBufLen := C.CFStringGetMaximumSizeForEncoding(length, C.kCFStringEncodingUTF8)
+	if maxBufLen == 0 {
+		return ""
+	}
+	buf := make([]byte, maxBufLen)
+	var usedBufLen C.CFIndex
+	_ = C.CFStringGetBytes(s, C.CFRange{0, length}, C.kCFStringEncodingUTF8, C.UInt8(0), C.false, (*C.UInt8)(&buf[0]), maxBufLen, &usedBufLen)
+	return string(buf[:usedBufLen])
+}
+
+// CFDataToBytes converts CFData to bytes.
+func CFDataToBytes(cfData C.CFDataRef) []byte {
+	return C.GoBytes(unsafe.Pointer(C.CFDataGetBytePtr(cfData)), C.int(C.CFDataGetLength(cfData)))
 }
