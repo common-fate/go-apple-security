@@ -26,7 +26,7 @@ func TestList(t *testing.T) {
 					Tag: "com.example.goapplesecurity.test.empty",
 				},
 			},
-			wantErr: true,
+			wantCount: 0,
 		},
 		{
 			name: "ok",
