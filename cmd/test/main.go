@@ -125,6 +125,8 @@ func readCodesignConfig() (*codesignConfig, error) {
 		if cfg.TeamID == "" {
 			return nil, errors.New("CODESIGN_TEAM_ID must be set")
 		}
+
+		return &cfg, nil
 	}
 
 	if _, err := os.Stat("codesign.json"); os.IsNotExist(err) {
