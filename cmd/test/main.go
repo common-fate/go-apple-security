@@ -108,7 +108,7 @@ func main() {
 			}
 		}
 
-		if os.Getenv("CI") == "true" && binaryPath == "enclavekey.test" {
+		if os.Getenv("CI") == "true" && file.Name() == "enclavekey.test" {
 			fmt.Printf("skipping running %q as it is not supported on GitHub Actions...\n", binaryPath)
 			continue
 		}
