@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"errors"
+	"os"
 	"testing"
 
 	applesecurity "github.com/common-fate/go-apple-security"
@@ -72,5 +73,49 @@ func TestKey_Sign(t *testing.T) {
 				t.Errorf("invalid signature")
 			}
 		})
+	}
+}
+
+func TestKey_Sign_Interactive(t *testing.T) {
+	if os.Getenv("INTERACTIVE") != "true" {
+		t.Skipf("INTERACTIVE env var is not set")
+	}
+
+	tag := "com.example.goapplesecurity.test.key"
+	label := "example key"
+	digestInput := "hello"
+
+	// delete any existing keys
+	_, err := Delete(DeleteInput{
+		Tag:   tag,
+		Label: label,
+	})
+	if err != nil && !errors.Is(err, applesecurity.ErrItemNotFound) {
+		t.Fatalf("error deleting existing keys: %v", err)
+	}
+
+	// create a new key based on the provided input
+	k, err := Create(CreateInput{
+		Tag:          tag,
+		Label:        label,
+		UserPresence: true,
+	})
+	if err != nil {
+		t.Fatalf("error creating key: %v", err)
+	}
+
+	k.LAContext = &LAContext{
+		LocalizedReason: "testing",
+	}
+
+	digest := sha256.Sum256([]byte(digestInput))
+
+	got, err := k.Sign(nil, digest[:], nil)
+	if err != nil {
+		t.Errorf("Key.Sign() error = %v, wantErr %v", err, false)
+		return
+	}
+	if !ecdsa.VerifyASN1(k.PublicKey, digest[:], got) {
+		t.Errorf("invalid signature")
 	}
 }

@@ -31,6 +31,9 @@ type Key struct {
 	PublicKey        *ecdsa.PublicKey
 	Tag              string
 	Label            string
+	// LAContext is the authentication context
+	// to use when signing with this key.
+	LAContext *LAContext
 }
 
 // rawToEcdsa turns an ASN.1 encoded byte stream to an ecdsa public key

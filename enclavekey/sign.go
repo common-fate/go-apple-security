@@ -1,10 +1,23 @@
 package enclavekey
 
 /*
-#cgo LDFLAGS: -framework CoreFoundation -framework Security
+#cgo CFLAGS: -x objective-c
+#cgo LDFLAGS: -framework CoreFoundation -framework Security -framework Foundation -framework LocalAuthentication
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <Security/Security.h>
+#include <Foundation/Foundation.h>
+#include <LocalAuthentication/LocalAuthentication.h>
+
+typedef struct {
+	char *LocalizedReason;
+} LAContextOptions;
+
+static LAContext* CreateLAContext(LAContextOptions options) {
+	LAContext *context = [[LAContext alloc] init];
+	context.localizedReason = [NSString stringWithUTF8String: options.LocalizedReason];
+	return context;
+}
 */
 import "C"
 
@@ -28,16 +41,26 @@ func (k *Key) Sign(_ io.Reader, digest []byte, _ crypto.SignerOpts) ([]byte, err
 	}
 	defer C.CFRelease(C.CFTypeRef(appLabel))
 
-	m := corefoundation.Dictionary{
-		corefoundation.TypeRef(C.kSecClass):                corefoundation.TypeRef(C.kSecClassKey),
-		corefoundation.TypeRef(C.kSecAttrKeyType):          corefoundation.TypeRef(C.kSecAttrKeyTypeEC),
-		corefoundation.TypeRef(C.kSecAttrApplicationLabel): corefoundation.TypeRef(appLabel),
-		corefoundation.TypeRef(C.kSecAttrKeyClass):         corefoundation.TypeRef(C.kSecAttrKeyClassPrivate),
-		corefoundation.TypeRef(C.kSecReturnRef):            corefoundation.TypeRef(C.kCFBooleanTrue),
-		corefoundation.TypeRef(C.kSecMatchLimit):           corefoundation.TypeRef(C.kSecMatchLimitOne),
+	m := corefoundation.PointerDictionary{
+		corefoundation.TypeRef(C.kSecClass):                unsafe.Pointer(C.CFTypeRef(C.kSecClassKey)),
+		corefoundation.TypeRef(C.kSecAttrKeyType):          unsafe.Pointer(C.CFTypeRef(C.kSecAttrKeyTypeEC)),
+		corefoundation.TypeRef(C.kSecAttrApplicationLabel): unsafe.Pointer(C.CFTypeRef(appLabel)),
+		corefoundation.TypeRef(C.kSecAttrKeyClass):         unsafe.Pointer(C.CFTypeRef(C.kSecAttrKeyClassPrivate)),
+		corefoundation.TypeRef(C.kSecReturnRef):            unsafe.Pointer(C.CFTypeRef(C.kCFBooleanTrue)),
+		corefoundation.TypeRef(C.kSecMatchLimit):           unsafe.Pointer(C.CFTypeRef(C.kSecMatchLimitOne)),
 	}
 
-	query, err := corefoundation.NewCFDictionary(m)
+	if k.LAContext != nil {
+		reason := C.CString(k.LAContext.LocalizedReason)
+		defer C.free(unsafe.Pointer(reason))
+
+		laContext := C.CreateLAContext(C.LAContextOptions{LocalizedReason: reason})
+		defer C.free(unsafe.Pointer(laContext))
+
+		m[corefoundation.TypeRef(C.kSecUseAuthenticationContext)] = unsafe.Pointer(laContext)
+	}
+
+	query, err := corefoundation.NewPointerDictionary(m)
 	if err != nil {
 		return nil, err
 	}
