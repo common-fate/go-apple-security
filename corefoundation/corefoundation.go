@@ -24,6 +24,7 @@ type DataRef = C.CFDataRef
 type DictionaryRef = C.CFDictionaryRef
 
 type Dictionary = map[TypeRef]TypeRef
+type PointerDictionary = map[TypeRef]unsafe.Pointer
 
 func NewCFDictionary(m Dictionary) (C.CFDictionaryRef, error) {
 	var (
@@ -34,6 +35,23 @@ func NewCFDictionary(m Dictionary) (C.CFDictionaryRef, error) {
 	for k, v := range m {
 		keys = append(keys, unsafe.Pointer(k))
 		vals = append(vals, unsafe.Pointer(v))
+	}
+
+	ref := C.CFDictionaryCreate(C.kCFAllocatorDefault, &keys[0], &vals[0], C.CFIndex(len(m)),
+		&C.kCFTypeDictionaryKeyCallBacks,
+		&C.kCFTypeDictionaryValueCallBacks)
+	return ref, nil
+}
+
+func NewPointerDictionary(m PointerDictionary) (C.CFDictionaryRef, error) {
+	var (
+		keys []unsafe.Pointer
+		vals []unsafe.Pointer
+	)
+
+	for k, v := range m {
+		keys = append(keys, unsafe.Pointer(k))
+		vals = append(vals, v)
 	}
 
 	ref := C.CFDictionaryCreate(C.kCFAllocatorDefault, &keys[0], &vals[0], C.CFIndex(len(m)),
