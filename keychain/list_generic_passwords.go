@@ -58,7 +58,7 @@ func ListGenericPasswords(input ListGenericPasswordsInput) ([]GenericPassword, e
 	for _, ref := range arr {
 		elementTypeID := C.CFGetTypeID(C.CFTypeRef(ref))
 		if elementTypeID != C.CFDictionaryGetTypeID() {
-			return nil, fmt.Errorf("Invalid result type within array: %s", CFTypeDescription(C.CFTypeRef(ref)))
+			return nil, fmt.Errorf("Invalid result type within array: %s", cfTypeDescription(C.CFTypeRef(ref)))
 		}
 
 		key, err := extractGenericPassword(C.CFDictionaryRef(ref))
@@ -89,8 +89,8 @@ func extractGenericPassword(ref C.CFDictionaryRef) (*GenericPassword, error) {
 	return &p, nil
 }
 
-// CFTypeDescription returns type string for CFTypeRef.
-func CFTypeDescription(ref C.CFTypeRef) string {
+// cfTypeDescription returns type string for CFTypeRef.
+func cfTypeDescription(ref C.CFTypeRef) string {
 	typeID := C.CFGetTypeID(ref)
 	typeDesc := C.CFCopyTypeIDDescription(typeID)
 	defer C.CFRelease(C.CFTypeRef(typeDesc))

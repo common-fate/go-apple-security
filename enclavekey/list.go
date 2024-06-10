@@ -78,7 +78,7 @@ func List(input ListInput) ([]Key, error) {
 		for _, ref := range arr {
 			elementTypeID := C.CFGetTypeID(C.CFTypeRef(ref))
 			if elementTypeID != C.CFDictionaryGetTypeID() {
-				return nil, fmt.Errorf("Invalid result type within array: %s", CFTypeDescription(C.CFTypeRef(ref)))
+				return nil, fmt.Errorf("Invalid result type within array: %s", cfTypeDescription(C.CFTypeRef(ref)))
 			}
 
 			key, err := convertResult(C.CFDictionaryRef(ref))
@@ -88,7 +88,7 @@ func List(input ListInput) ([]Key, error) {
 			results = append(results, key)
 		}
 	} else {
-		return nil, fmt.Errorf("Invalid result type: %s", CFTypeDescription(resultsRef))
+		return nil, fmt.Errorf("Invalid result type: %s", cfTypeDescription(resultsRef))
 	}
 
 	return results, nil
@@ -111,8 +111,8 @@ func convertResult(d C.CFDictionaryRef) (Key, error) {
 	return result, nil
 }
 
-// CFTypeDescription returns type string for CFTypeRef.
-func CFTypeDescription(ref C.CFTypeRef) string {
+// cfTypeDescription returns type string for CFTypeRef.
+func cfTypeDescription(ref C.CFTypeRef) string {
 	typeID := C.CFGetTypeID(ref)
 	typeDesc := C.CFCopyTypeIDDescription(typeID)
 	defer C.CFRelease(C.CFTypeRef(typeDesc))
