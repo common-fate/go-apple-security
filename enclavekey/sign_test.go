@@ -2,6 +2,7 @@ package enclavekey
 
 import (
 	"crypto/ecdsa"
+	"crypto/sha256"
 	"errors"
 	"testing"
 
@@ -38,7 +39,6 @@ func TestKey_Sign(t *testing.T) {
 				Tag:   "com.example.goapplesecurity.test.key",
 				Label: "example key",
 			},
-			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -61,12 +61,14 @@ func TestKey_Sign(t *testing.T) {
 				t.Fatalf("error creating key: %v", err)
 			}
 
-			got, err := k.Sign(nil, tt.args.digest, nil)
+			digest := sha256.Sum256([]byte(tt.args.digest))
+
+			got, err := k.Sign(nil, digest[:], nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Key.Sign() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && !ecdsa.VerifyASN1(k.PublicKey, tt.args.digest, got) {
+			if !tt.wantErr && !ecdsa.VerifyASN1(k.PublicKey, digest[:], got) {
 				t.Errorf("invalid signature")
 			}
 		})

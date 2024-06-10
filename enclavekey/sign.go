@@ -57,7 +57,7 @@ func (k *Key) Sign(_ io.Reader, digest []byte, _ crypto.SignerOpts) ([]byte, err
 	defer C.CFRelease(C.CFTypeRef(cfDigest))
 
 	var eref C.CFErrorRef
-	signature := C.SecKeyCreateSignature(C.SecKeyRef(key), C.kSecKeyAlgorithmECDSASignatureDigestX962, C.CFDataRef(cfDigest), &eref)
+	signature := C.SecKeyCreateSignature(C.SecKeyRef(key), C.kSecKeyAlgorithmECDSASignatureDigestX962SHA256, C.CFDataRef(cfDigest), &eref)
 	if err := goError(eref); err != nil {
 		return nil, err
 	}
