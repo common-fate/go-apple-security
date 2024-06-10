@@ -48,7 +48,7 @@ func TestKey_Sign(t *testing.T) {
 				Tag:   tt.fields.Tag,
 				Label: tt.fields.Label,
 			})
-			if err != nil && !errors.Is(err, applesecurity.ErrNotFound) {
+			if err != nil && !errors.Is(err, applesecurity.ErrItemNotFound) {
 				t.Fatalf("error deleting existing keys: %v", err)
 			}
 

@@ -53,7 +53,7 @@ func TestList(t *testing.T) {
 				Tag:   tt.args.input.Tag,
 				Label: tt.args.input.Label,
 			})
-			if err != nil && !errors.Is(err, applesecurity.ErrNotFound) {
+			if err != nil && !errors.Is(err, applesecurity.ErrItemNotFound) {
 				t.Fatalf("error deleting existing keys: %v", err)
 			}
 
@@ -86,7 +86,7 @@ func TestListReturnsAttributes(t *testing.T) {
 	_, err := Delete(DeleteInput{
 		Tag: tag,
 	})
-	if err != nil && !errors.Is(err, applesecurity.ErrNotFound) {
+	if err != nil && !errors.Is(err, applesecurity.ErrItemNotFound) {
 		t.Fatalf("error deleting existing keys: %v", err)
 	}
 
