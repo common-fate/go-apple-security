@@ -61,7 +61,7 @@ func List(input ListInput) ([]Key, error) {
 	var resultsRef C.CFTypeRef
 	status := C.SecItemCopyMatching(C.CFDictionaryRef(query), &resultsRef)
 	err = goError(status)
-	if errors.Is(err, applesecurity.ErrNotFound) {
+	if errors.Is(err, applesecurity.ErrItemNotFound) {
 		// no items found, return nil.
 		return nil, nil
 	}

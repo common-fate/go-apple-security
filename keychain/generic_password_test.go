@@ -1,21 +1,21 @@
 package keychain
 
-import "testing"
+import (
+	"errors"
+	"testing"
+
+	applesecurity "github.com/common-fate/go-apple-security"
+)
 
 func TestGenericPassword_AddRemove(t *testing.T) {
-	type fields struct {
-		Account string
-		Service string
-		Data    []byte
-	}
 	tests := []struct {
 		name    string
-		fields  fields
+		input   GenericPassword
 		wantErr bool
 	}{
 		{
 			name: "ok",
-			fields: fields{
+			input: GenericPassword{
 				Account: "foo",
 				Service: "bar",
 				Data:    []byte("hello"),
@@ -24,20 +24,17 @@ func TestGenericPassword_AddRemove(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &GenericPassword{
-				Account: tt.fields.Account,
-				Service: tt.fields.Service,
-				Data:    tt.fields.Data,
-			}
-
 			// remove any existing keychain item,
 			// otherwise Add will always fail.
-			err := p.Remove()
-			if err != nil {
+			_, err := DeleteGenericPasswords(DeleteGenericPasswordsInput{
+				Account: tt.input.Account,
+				Service: tt.input.Service,
+			})
+			if err != nil && !errors.Is(err, applesecurity.ErrItemNotFound) {
 				t.Fatal(err)
 			}
 
-			if err := p.Add(); (err != nil) != tt.wantErr {
+			if err := AddGenericPassword(tt.input); (err != nil) != tt.wantErr {
 				t.Errorf("GenericPassword.Add() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

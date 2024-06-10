@@ -60,9 +60,6 @@ var (
 	ErrUserCanceled = Error(C.errSecUserCanceled)
 	// ErrMissingEntitlement corresponds to errSecMissingEntitlement result code
 	ErrMissingEntitlement = Error(C.errSecMissingEntitlement)
-
-	// ErrNotFound occurs when a keychain item is not found.
-	ErrNotFound = Error(-25300)
 )
 
 // ErrorFromCode turns an error code into a Go error.
@@ -124,8 +121,6 @@ func (k Error) Error() (msg string) {
 		msg = "user canceled the operation"
 	case ErrMissingEntitlement:
 		msg = "a required entitlement is missing: ensure that your binary has been properly codesigned and has entitlements allowing keychain access"
-	case ErrNotFound:
-		msg = "the specified item could not be found in the keychain"
 	default:
 		msg = "keychain error"
 	}
